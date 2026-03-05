@@ -1,0 +1,29 @@
+# =========================================
+# BACKEND: SECRETS & DATABASES (CRITICAL)
+# =========================================
+backend/.env
+backend/graph_cache.db
+*.db
+.env
+
+# =========================================
+# BACKEND: PYTHON CACHES & ENVS
+# =========================================
+**/__pycache__/
+**/*.pyc
+backend/venv/
+backend/env/
+
+# =========================================
+# FRONTEND: NODE & NEXT.JS
+# =========================================
+# (Your frontend/.gitignore handles this too, but this is a global safety net)
+**/node_modules/
+**/.next/
+
+# =========================================
+# OS & EDITOR FILES
+# =========================================
+.DS_Store
+.vscode/
+.idea/
