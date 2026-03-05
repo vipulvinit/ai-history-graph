@@ -19,7 +19,7 @@ export default function SearchBar({ onDataReceived }: SearchBarProps) {
     setIsLoading(true);
     
     try {
-      const response = await fetch("https://YOUR_RENDER_URL.onrender.com/api/generate-graph", {
+      const response = await fetch("https://history-graph-api.onrender.com/api/generate-graph", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ query: query }), 
