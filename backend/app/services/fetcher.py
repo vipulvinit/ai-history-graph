@@ -1,40 +1,55 @@
 import wikipedia
+import re
 
-def fetch_historical_context(query: str) -> str:
+def fetch_wikipedia_content(query: str, max_sentences: int = 15) -> str:
     """
-    Searches Wikipedia for multiple entities and stitches brief summaries together to save tokens.
+    Intelligently splits complex queries and fetches context for multiple entities.
     """
-    print(f"[*] Searching Wikipedia for multi-context: {query}")
-    try:
-        # Ask Wikipedia for the top 2 results to ensure both sides of a complex query are caught
-        search_results = wikipedia.search(query, results=2)
-        
-        if not search_results:
-            return ""
+    print(f"[*] Fetching Wikipedia context for: {query}")
+    
+    # 1. Split the query by common comparative words (and, vs, versus)
+    split_pattern = r'\b(and|vs\.?|versus)\b'
+    parts = re.split(split_pattern, query, flags=re.IGNORECASE)
+    
+    # 2. Clean up the split list to only keep the actual entities
+    ignore_words = ['and', 'vs', 'vs.', 'versus']
+    entities = [p.strip() for p in parts if p.lower().strip() not in ignore_words and p.strip()]
+    
+    # Fallback just in case the split didn't work
+    if not entities:
+        entities = [query]
+
+    combined_context = []
+    
+    # 3. Fetch Wikipedia for each separate entity
+    for entity in entities:
+        try:
+            # Search for the best matching page title first
+            search_results = wikipedia.search(entity)
+            if not search_results:
+                print(f"[-] No Wikipedia page found for '{entity}'")
+                continue
+                
+            best_match = search_results[0]
             
-        combined_text = ""
-        
-        for title in search_results:
-            print(f"[*] Fetching component: {title}")
+            # Split the sentence allowance evenly between entities
+            sentences_per_entity = max(5, max_sentences // len(entities))
+            summary = wikipedia.summary(best_match, sentences=sentences_per_entity)
+            
+            combined_context.append(f"--- Context for {best_match} ---\n{summary}")
+            print(f"[+] Successfully fetched: {best_match}")
+            
+        except wikipedia.exceptions.DisambiguationError as e:
+            # If Wikipedia isn't sure which one we mean, just grab the first option
             try:
-                page = wikipedia.page(title, auto_suggest=False)
-                
-                # TOKEN SAVER: Split the summary by periods and take only the first 4 sentences.
-                # This gives the AI the core facts without the fluff.
-                sentences = page.summary.split(". ")[:4]
-                short_summary = ". ".join(sentences) + "."
-                
-                combined_text += f"--- {title} ---\n{short_summary}\n\n"
-                
-            except wikipedia.exceptions.DisambiguationError:
-                # If a term is too vague, skip it to save time
-                print(f"[*] Skipped vague term: {title}")
-                continue
-            except wikipedia.exceptions.PageError:
-                continue
-
-        return combined_text
-        
-    except Exception as e:
-        print(f"[!] Fetcher error: {str(e)}")
-        return ""
+                summary = wikipedia.summary(e.options[0], sentences=sentences_per_entity)
+                combined_context.append(f"--- Context for {e.options[0]} ---\n{summary}")
+                print(f"[+] Resolved disambiguation to: {e.options[0]}")
+            except Exception:
+                pass
+        except Exception as e:
+            print(f"[-] Error fetching '{entity}': {e}")
+            
+    # 4. Stitch it all together into one big text block for the AI
+    final_text = "\n\n".join(combined_context)
+    return final_text
