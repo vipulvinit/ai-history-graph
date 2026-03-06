@@ -1,7 +1,7 @@
 import wikipedia
 import re
 
-def fetch_wikipedia_content(query: str, max_sentences: int = 15) -> str:
+def fetch_historical_context(query: str, max_sentences: int = 15) -> str:
     """
     Intelligently splits complex queries and fetches context for multiple entities.
     """
