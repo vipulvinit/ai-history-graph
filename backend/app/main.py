@@ -16,7 +16,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:3000",
-        "https://ai-history-graph.vercel.app" # <-- THE MAGIC KEY
+        "https://chrono-graph.vercel.app" # <-- THE MAGIC KEY
     ],
     allow_credentials=True,
     allow_methods=["*"],
