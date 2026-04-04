@@ -22,9 +22,14 @@ def extract_knowledge_graph(wiki_text: str) -> GraphResponse:
     
     CRITICAL INSTRUCTION: You are receiving text about multiple distinct topics. Your ABSOLUTE PRIMARY GOAL is to find the historical, thematic, or philosophical bridge connecting them. 
     If the provided text does not explicitly state the connection, you MUST use your own internal historical knowledge to create at least one linking edge (e.g., 'INFLUENCED', 'INSPIRED', 'REJECTED') that bridges the two main topics. 
-    THE GRAPH MUST NOT HAVE DISCONNECTED CLUSTERS. Every node must eventually connect to the overarching web.
     
-    Return strictly valid JSON.
+    GRAPH TOPOLOGY PROTOCOL (STRICTLY ENFORCED):
+    1. EXACT ID MATCHING: Every 'source' and 'target' in your links array MUST exactly match an 'id' that exists in your nodes array. Case-sensitive. Do not link to entities you have not defined.
+    2. NO ORPHANED NODES(VERY IMPORTANT): Every single entity in the nodes array MUST appear at least once in the links array. If a node has no connections, DO NOT include it in the graph .
+    3. THEMATIC BRIDGING: The graph MUST NOT have disconnected clusters. Every node must eventually connect to the overarching web. Use broad relation labels if necessary (e.g., "CONTEMPORARY_OF", "PRECEDED", and more such).
+
+    Return STRICTLY valid, minified JSON. Do NOT wrap the JSON in markdown formatting (like ```json ... ```). Output nothing but the raw, parsable JSON object.
+    
     The JSON must follow this exact structure:
     {{
         "nodes": [
@@ -44,7 +49,7 @@ def extract_knowledge_graph(wiki_text: str) -> GraphResponse:
         "links": [
             {{
                 "source": "Entity 1 ID", "target": "Entity 2 ID", 
-                "label": "CAUSED" | "INFLUENCED" | "OPPOSED" | "INSPIRED", 
+                "label": "CAUSED" | "INFLUENCED" | "OPPOSED" | "INSPIRED" | "CONTEMPORARY_OF", 
                 "confidence_score": 0-10, 
                 "snippet": "Exact quote from text, OR If you used internal knowledge to bridge the topics, write a concise 1-sentence historical explanation of how they connect."
             }}
